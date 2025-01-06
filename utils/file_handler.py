@@ -1,5 +1,6 @@
 import os
 import tempfile
+import mimetypes
 
 class FileHandler:
     """
@@ -25,6 +26,34 @@ class FileHandler:
         self.temp_folder = tempfile.mkdtemp()
         print(f"Temporary folder created: {self.temp_folder}")
 
+    def read_file(self, file_path):
+        """
+        Reads the content of the file at the given path, and determines whether to open it in binary ('rb') or 
+        text ('r') mode based on the file's type (e.g., by extension or MIME type).
+
+        Args:
+            file_path (str): The path to the file to read.
+
+        Returns:
+            str or bytes: The file content as a string (if text) or bytes (if binary).
+        """
+        try:
+            # Determine if the file is binary or text
+            mime_type, _ = mimetypes.guess_type(file_path)   
+            if mime_type and mime_type.startswith('text'):
+                # Open file in text mode
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    file_content = file.read()
+                return file_content
+            else:
+                # Open file in binary mode
+                with open(file_path, 'rb') as file:
+                    file_content = file.read()
+                return file_content
+        except Exception as e:
+            print(f"Error reading file {file_path}: {e}")
+            return None
+        
     def save_file(self, file_content, output_filename="output.docx"):
         """
         Saves the provided content to a file within the temporary folder.
@@ -45,6 +74,8 @@ class FileHandler:
         try:
             # Determine if the content is text or binary and save accordingly
             if isinstance(file_content, str):
+                # Ensure proper newline handling for text files, especially for Windows (if relevant)
+                file_content = file_content.replace('\r\n', '\n')  # Normalize line endings to LF (Unix-style)
                 # Save as text (use "w" mode for writing text files)
                 with open(file_path, "w", encoding="utf-8") as file:
                     file.write(file_content)
