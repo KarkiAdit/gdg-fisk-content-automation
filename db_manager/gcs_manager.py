@@ -67,18 +67,17 @@ class GcsManager:
         # Reassemble the content back into a single string
         modified_content = '\n'.join(lines)
         return modified_content, image_data_with_placeholder
-
-    
-if __name__ == "__main__":
-    # Test function
-    from utils.drive_folders.sample_readme_str import readme_content
-    readme_txt = readme_content
-    # Initialize the Google Cloud Storage Manager with the bucket name
-    assets_manager = GcsManager(bucket_name="gdg-fisk-assets")
-    try:
-        # Extract images and replace base64 data with public URLs
-        modified_content, _ = assets_manager.publish_image_assets(readme_txt)
-        print("Modified README Content:")
-        print(modified_content)
-    except Exception as e:
-        print(f"An error occurred: {e}")
+ 
+# if __name__ == "__main__":
+#     # Test function
+#     from utils.drive_folders.sample_readme_str import readme_content
+#     readme_txt = readme_content
+#     # Initialize the Google Cloud Storage Manager with the bucket name
+#     assets_manager = GcsManager(bucket_name="gdg-fisk-assets")
+#     try:
+#         # Extract images and replace base64 data with public URLs
+#         modified_content, _ = assets_manager.publish_image_assets(readme_txt)
+#         print("Modified README Content:")
+#         print(modified_content)
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
