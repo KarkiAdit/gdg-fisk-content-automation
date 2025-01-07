@@ -71,6 +71,12 @@ def get_google_drive_service():
     """
     return build('drive', 'v3', credentials=get_oauth_client_token())
 
+def get_google_docs_service():
+    """
+    Builds and returns an authenticated Google Docs API service.
+    """
+    return build('docs', 'v1', credentials=get_oauth_client_token())
+
 # if __name__ == "__main__":
 #     # Test the function
 #     firestore_client = get_firestore_cloud_client()

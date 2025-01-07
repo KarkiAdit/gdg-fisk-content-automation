@@ -1,4 +1,4 @@
-from config.auth import get_google_drive_service
+from config.auth import get_google_drive_service, get_google_docs_service
 from utils.file_handler import FileHandler
 from googleapiclient.errors import HttpError
 import urllib.parse
@@ -25,6 +25,7 @@ class DriveContentManager:
             folder_ids (dict): A dictionary mapping folder names to their corresponding Google Drive folder IDs.
         """
         self.drive_service = get_google_drive_service()
+        self.docs_service = get_google_docs_service()
         self.folder_ids = folder_ids
         self.content_identifiers = {}
         self.file_handler = FileHandler()
@@ -92,23 +93,29 @@ class DriveContentManager:
 
     def read_google_docs(self, folder_name, file_name, output_file_name="output.docx", export_format="application/vnd.openxmlformats-officedocument.wordprocessingml.document"):
         """
-        Exports a Google Docs file from a specified folder to a specified format and saves it locally.
+        Exports a Google Docs file from a specified folder, adds a UUID if necessary, and saves it locally.
 
         This method uses the Google Drive API to export a Google Docs file into the specified format 
-        (e.g., .docx) and saves it to the given output path on the local machine.
+        (e.g., .docx) and saves it to the given output path on the local machine. If the exported file 
+        doesn't already contain a UUID, it generates a new one and inserts it into the first paragraph 
+        of the document. The updated Google Docs file is then synced with the Google Docs API.
 
         Args:
             folder_name (str): The name of the folder containing the Google Docs file.
             file_name (str): The name of the Google Docs file to retrieve.
-            output_file_name (str): The local file name where the exported file should be saved.
+            output_file_name (str): The local file name where the exported file should be saved. Defaults to "output.docx".
             export_format (str, optional): The MIME type to export the file in. Default is "application/vnd.openxmlformats-officedocument.wordprocessingml.document" (i.e., .docx format).
 
         Returns:
-            str: The local path where the exported file is saved if successful.
+            tuple: A tuple containing two values:
+                - str: The local path where the exported file is saved if successful.
+                - str: The UUID added to the document (either existing or newly generated).
+            
             None: If an error occurs during the export process.
 
         Raises:
-            Exception: If the export request fails or if there are issues with the provided file_id or output_file_name.
+            Exception: If the export request fails, there are issues with the provided file metadata, 
+                    or there is a problem with updating the document.
         """
         try:
             # Get file metadata using get_file_from_folder
@@ -126,7 +133,27 @@ class DriveContentManager:
             # Save the file locally using FileHandler
             output_path = self.file_handler.save_file(file_content, output_file_name)
             print(f"Google Docs file saved as {output_path}")
-            return output_path
+            # Add a UUID to the file if not already present
+            uuid, new_uuid_added = self.file_handler.update_file_with_uuid(output_path)
+            if new_uuid_added:
+                # Update the Google Docs file with the new UUID using the Google Docs API
+                self.docs_service.documents().batchUpdate(
+                    documentId=file_id,
+                    body={
+                        "requests": [
+                            {
+                                "insertText": {
+                                    "location": {
+                                        "index": 1  # Assuming index 1 is the start of the document
+                                    },
+                                    "text": f"File Id: \"{uuid}\"\n"
+                                }
+                            }
+                        ]
+                    }
+                ).execute()
+                print(f"UUID '{uuid}' added to the Google Docs file.")
+            return output_path, uuid
         except Exception as e:
             # Catch any exceptions and print the error message
             print(f"Error exporting Google Docs to {export_format} format: {e}")
@@ -181,11 +208,12 @@ class DriveContentManager:
             print(f"Error removing file: {error}")
             return False
         
-# if __name__ == "__main__":
-#     # Test function
-#     from utils.drive_folders.folder_ids_map import folder_ids
-#     drive_c_manager = DriveContentManager(folder_ids)
-#     drive_c_manager.download_md_from_drive("codelabs", "TestCodelab")
-#     drive_c_manager.read_google_docs("projects", "TestDocs")
-#     # drive_c_manager.file_handler.cleanup()
+if __name__ == "__main__":
+    # Test function
+    from utils.drive_folders.folder_ids_map import folder_ids
+    drive_c_manager = DriveContentManager(folder_ids)
+    # drive_c_manager.download_md_from_drive("codelabs", "TestCodelab")
+    drive_c_manager.read_google_docs("projects", "TestDocs")
+    drive_c_manager.download_md_from_drive("projects", "TestDocs")
+    # drive_c_manager.file_handler.cleanup()
 

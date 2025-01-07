@@ -1,6 +1,8 @@
 import os
 import tempfile
 import mimetypes
+import uuid
+from docx import Document
 
 class FileHandler:
     """
@@ -134,3 +136,55 @@ class FileHandler:
             print(f"Temporary folder {self.temp_folder} and all contents have been deleted.")
         except Exception as error:
             print(f"Error cleaning up temp folder: {error}")
+
+    def update_file_with_uuid(self, target_path):
+        """
+        Updates the first paragraph of a .docx file to include a UUID, if not already present.
+
+        This method checks if the first paragraph of the specified .docx file contains a UUID 
+        in the format `file_id: "uuid"`. If a valid UUID is already present, it is left unchanged. 
+        If the `file_id:` marker is present without a UUID, a new UUID is generated and added. 
+        If the `file_id:` marker is not present, a new paragraph is prepended to the file with the UUID.
+
+        Args:
+            target_path (str): The path to the .docx file to update.
+
+        Returns:
+            tuple:
+                - file_uuid (str): The UUID found or generated for the file.
+                - added_new_uuid (bool): True if a new UUID was added, False if a valid UUID was already present.
+
+        Raises:
+            Exception: If there is an error reading or saving the file.
+        """
+        try:
+            doc = Document(target_path)
+            first_paragraph = doc.paragraphs[0].text.strip() if doc.paragraphs else ""
+            uuid_marker = "file_id:"
+            file_uuid = ""
+            added_new_uuid = False
+            if first_paragraph.startswith(uuid_marker):
+                # Extract the UUID if present
+                file_uuid = first_paragraph.split(uuid_marker)[-1].strip().strip('"')
+                if file_uuid:
+                    print(f"UUID already present: {file_uuid}")
+                else:
+                    print("UUID placeholder present but no UUID. Generating new UUID...")
+                    file_uuid = str(uuid.uuid4())
+                    doc.paragraphs[0].text = f'{uuid_marker} "{file_uuid}"'
+                    added_new_uuid = True
+            else:
+                # Add a new UUID at the beginning
+                print("UUID not present. Generating and prepending new UUID...")
+                file_uuid = str(uuid.uuid4())
+                new_paragraph = doc.add_paragraph(f'{uuid_marker} "{file_uuid}"')
+                doc.paragraphs.insert(0, new_paragraph)
+                added_new_uuid = True
+            # Save changes if a new UUID was added
+            if added_new_uuid:
+                doc.save(target_path)
+                print(f"Updated file saved to {target_path}")
+            return file_uuid, added_new_uuid
+        except Exception as e:
+            print(f"Error generating the UUID: {e}")
+            raise
