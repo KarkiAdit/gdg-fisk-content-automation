@@ -1,8 +1,10 @@
 from google.cloud import firestore, storage
-import google.generativeai as genai
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
-from config.settings import DB_SERVICE_ACCOUNT_PATH, GENAI_SERVICE_ACCOUNT_PATH, CLIENT_TOKEN_PATH, GOOGLE_CLOUD_PROJECT
+import vertexai
+from vertexai.generative_models import GenerativeModel
+from config.settings import DB_SERVICE_ACCOUNT_PATH, GENAI_SERVICE_ACCOUNT_PATH, CLIENT_TOKEN_PATH, GOOGLE_CLOUD_PROJECT, GEMINI_MODEL, GEMINI_MODEL_LOCATION
 import os, pickle
 
 def get_firestore_cloud_client():
@@ -27,15 +29,16 @@ def get_cloud_storage_client():
     )
     return storage_client
 
-def get_gemini_cloud_client():
+def get_gemini_model():
     """
-    Configures and returns a Generative AI client (Gemini 1.5 Flash) authenticated using an API key.
+    Configures and returns a Gemini Generative AI model client authenticated with a service account.
     """
-    # Configure the Generative AI client with the API key
-    genai.configure(api_key=GENAI_SERVICE_ACCOUNT_PATH)
-    # Initialize the Gemini model
-    gemini_client = genai.GenerativeModel("gemini-1.5-flash")
-    return gemini_client
+    # Only initialize the Vertex AI client with service account credentials
+    credentials = service_account.Credentials.from_service_account_file(GENAI_SERVICE_ACCOUNT_PATH)
+    vertexai.init(project=GOOGLE_CLOUD_PROJECT, location=GEMINI_MODEL_LOCATION, credentials=credentials)
+    # Initialize and return the Generative Model client
+    model = GenerativeModel(GEMINI_MODEL)
+    return model
 
 def get_oauth_client_token():
     """
@@ -74,8 +77,8 @@ def get_google_drive_service():
 #     print("Firestore Client: ", firestore_client)
 #     gcs_client = get_cloud_storage_client()
 #     print("Storage Client: ", gcs_client)
-#     gen_ai_client = get_gemini_cloud_client()
-#     print("Gemini 1.5 Flash Client: ", gen_ai_client)
+#     gen_ai_model = get_gemini_model()
+#     print("Gemini 1.5 Flash Model: ", gen_ai_model)
 #     drive_service = get_google_drive_service()
 #     print(drive_service)
 #     docs_service = get_google_docs_service()
