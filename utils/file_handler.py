@@ -160,7 +160,7 @@ class FileHandler:
         try:
             doc = Document(target_path)
             first_paragraph = doc.paragraphs[0].text.strip() if doc.paragraphs else ""
-            uuid_marker = "file_id:"
+            uuid_marker = "File Id:"
             file_uuid = ""
             added_new_uuid = False
             if first_paragraph.startswith(uuid_marker):

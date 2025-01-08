@@ -208,12 +208,12 @@ class DriveContentManager:
             print(f"Error removing file: {error}")
             return False
         
-if __name__ == "__main__":
-    # Test function
-    from utils.drive_folders.folder_ids_map import folder_ids
-    drive_c_manager = DriveContentManager(folder_ids)
-    # drive_c_manager.download_md_from_drive("codelabs", "TestCodelab")
-    drive_c_manager.read_google_docs("projects", "TestDocs")
-    drive_c_manager.download_md_from_drive("projects", "TestDocs")
-    # drive_c_manager.file_handler.cleanup()
+# if __name__ == "__main__":
+#     # Test function
+#     from utils.drive_folders.folder_ids_map import folder_ids
+#     drive_c_manager = DriveContentManager(folder_ids)
+#     # drive_c_manager.download_md_from_drive("codelabs", "TestCodelab")
+#     drive_c_manager.read_google_docs("projects", "TestDocs")
+#     drive_c_manager.download_md_from_drive("projects", "TestDocs")
+#     # drive_c_manager.file_handler.cleanup()
 
