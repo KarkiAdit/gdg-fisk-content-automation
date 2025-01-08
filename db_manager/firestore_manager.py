@@ -75,7 +75,7 @@ class FirestoreManager:
         doc_ref = self.client.collection(self.collection_name).document(doc_name)
         try:
             data = self._convert_to_dict(data)
-            data["last_updated"] = firestore.SERVER_TIMESTAMP
+            data["lastUpdated"] = firestore.SERVER_TIMESTAMP
             if doc_ref.get().exists:
                 doc_ref.update(data)
                 logging.info(f"Document '{doc_name}' updated successfully.")
@@ -119,7 +119,7 @@ class FirestoreManager:
         try:
             data = {
                 field_name: value,
-                "last_updated": firestore.SERVER_TIMESTAMP
+                "lastUpdated": firestore.SERVER_TIMESTAMP
             }
             if doc_ref.get().exists:
                 doc_ref.update(data)
@@ -209,3 +209,15 @@ class FirestoreManager:
 #     print("Document data:", culture_doc)
 #     # Empty "CodelabsPageResponse"
 #     firestore_manager.update_document("CodelabsPageResponse", {"codelabs": []})
+#     # Create a new document named Subscribers 
+#     # The subscribers data
+#     new_document_data = {
+#         "emails": ["adityakarki728@gmail.com"],
+#         "lastUpdated": firestore.SERVER_TIMESTAMP
+#     }
+#     # Name of the new document
+#     new_document_name = "Subscribers"
+#     # Create or update the document
+#     firestore_manager.update_document(new_document_name, new_document_data)
+#     print(f"Document '{new_document_name}' has been created or updated.")
+
