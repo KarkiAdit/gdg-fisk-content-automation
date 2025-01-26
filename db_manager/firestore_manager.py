@@ -91,19 +91,15 @@ class FirestoreManager:
         Args:
             doc_name (str): The name of the document to update.
             field_name (str): The name of the list field to append data to.
-            new_data (any): The data to append. Can be a single object or a list.
+            new_data (any): The data to append. Can be a single object or a list of objects.
         """
         try:
             field_data = self.read_field(doc_name, field_name)
             if not isinstance(field_data, list):
                 raise TypeError(f"Field '{field_name}' is not a list.")
-            if hasattr(new_data, "__dataclass_fields__"):
-                new_data = self._convert_to_dict(new_data)
-            if isinstance(new_data, list):
-                new_data = [self._convert_to_dict(item) for item in new_data]
-            field_data.extend(new_data)
+            field_data.append(new_data)
             self.update_field(doc_name, field_name, field_data)
-            logging.info(f"Data appended to list field '{field_name}' in document '{doc_name}'.")
+            logging.info(f"Data successfully appended to list field '{field_name}' in document '{doc_name}'.")
         except Exception as e:
             logging.error(f"Error appending to list field '{field_name}' in document '{doc_name}': {e}")
 
@@ -185,39 +181,53 @@ class FirestoreManager:
 #     firestore_manager = FirestoreManager()
 #     sample_project = {"title": "Sample Project", "description": "A test project for demonstration."}
 #     sample_codelab = {"title": "Sample Codelab", "description": "A test codelab for learning."}
-#     sample_testimonial = {"author": "John Doe", "content": "This is a testimonial."}
-#     # Demonstrate updating a document
-#     print("Updating 'ProjectsPageResponse' document...")
-#     firestore_manager.update_document("ProjectsPageResponse", {"projects": [sample_project]})
-#     # Demonstrate reading a document
-#     print("\nReading 'ProjectsPageResponse' document...")
-#     projects_doc = firestore_manager.read_document("ProjectsPageResponse")
-#     print("Document data:", projects_doc)
-#     # Demonstrate updating a field
-#     print("\nUpdating 'homeVideoUrl' field in 'HomePageResponse' document...")
-#     firestore_manager.update_field("HomePageResponse", "homeVideoUrl", "/new-home-video-url")
-#     # Demonstrate reading a specific field
-#     print("\nReading 'homeVideoUrl' field from 'HomePageResponse' document...")
-#     home_video_url = firestore_manager.read_field("HomePageResponse", "homeVideoUrl")
-#     print("Home Video URL:", home_video_url)
-#     # Demonstrate appending data to a list field
-#     print("\nAppending a new testimonial to 'testimonials' field in 'CulturePageResponse' document...")
-#     firestore_manager.append_doc_field_list("CulturePageResponse", "testimonials", sample_testimonial)
-#     # Read the updated 'CulturePageResponse' document
-#     print("\nReading 'CulturePageResponse' document after appending to 'testimonials'...")
-#     culture_doc = firestore_manager.read_document("CulturePageResponse")
-#     print("Document data:", culture_doc)
-#     # Empty "CodelabsPageResponse"
-#     firestore_manager.update_document("CodelabsPageResponse", {"codelabs": []})
-#     # Create a new document named Subscribers 
-#     # The subscribers data
-#     new_document_data = {
-#         "emails": ["adityakarki728@gmail.com"],
-#         "lastUpdated": firestore.SERVER_TIMESTAMP
-#     }
-#     # Name of the new document
-#     new_document_name = "Subscribers"
-#     # Create or update the document
-#     firestore_manager.update_document(new_document_name, new_document_data)
-#     print(f"Document '{new_document_name}' has been created or updated.")
+#     sample_codelab1 = {
+#         "id": "codelab-2",
+#         "screenshotUrl": "/images/placeholders/home-placeholder2.png",
+#         "gcsUrl": "this is iframe bucket url",
+#         "title": "Advanced React Patterns",
+#         "keyLearnings": [
+#             { "content": "Implement", "icon": "💻🔧" },
+#             { "content": "Understand", "icon": "🧠📘" },
+#             { "content": "Explore React context and hooks", "icon": "⚛️🔍" },
+#             { "content": "More Dev", "icon": "🛠️🚀" }
+#           ],
+#         "releasedDate": "2023-12-15",
+#       }
+#     firestore_manager.append_doc_field_list("CodelabsPageResponse", "codelabs", sample_codelab1)
+#     # sample_testimonial = {"author": "John Doe", "content": "This is a testimonial."}
+#     # # Demonstrate updating a document
+#     # print("Updating 'ProjectsPageResponse' document...")
+#     # firestore_manager.update_document("ProjectsPageResponse", {"projects": [sample_project]})
+#     # # Demonstrate reading a document
+#     # print("\nReading 'ProjectsPageResponse' document...")
+#     # projects_doc = firestore_manager.read_document("ProjectsPageResponse")
+#     # print("Document data:", projects_doc)
+#     # # Demonstrate updating a field
+#     # print("\nUpdating 'homeVideoUrl' field in 'HomePageResponse' document...")
+#     # firestore_manager.update_field("HomePageResponse", "homeVideoUrl", "/new-home-video-url")
+#     # # Demonstrate reading a specific field
+#     # print("\nReading 'homeVideoUrl' field from 'HomePageResponse' document...")
+#     # home_video_url = firestore_manager.read_field("HomePageResponse", "homeVideoUrl")
+#     # print("Home Video URL:", home_video_url)
+#     # # Demonstrate appending data to a list field
+#     # print("\nAppending a new testimonial to 'testimonials' field in 'CulturePageResponse' document...")
+#     # firestore_manager.append_doc_field_list("CulturePageResponse", "testimonials", sample_testimonial)
+#     # # Read the updated 'CulturePageResponse' document
+#     # print("\nReading 'CulturePageResponse' document after appending to 'testimonials'...")
+#     # culture_doc = firestore_manager.read_document("CulturePageResponse")
+#     # print("Document data:", culture_doc)
+#     # # Empty "CodelabsPageResponse"
+#     # firestore_manager.update_document("CodelabsPageResponse", {"codelabs": []})
+#     # # Create a new document named Subscribers 
+#     # # The subscribers data
+#     # new_document_data = {
+#     #     "emails": ["adityakarki728@gmail.com"],
+#     #     "lastUpdated": firestore.SERVER_TIMESTAMP
+#     # }
+#     # # Name of the new document
+#     # new_document_name = "Subscribers"
+#     # # Create or update the document
+#     # firestore_manager.update_document(new_document_name, new_document_data)
+#     # print(f"Document '{new_document_name}' has been created or updated.")
 
