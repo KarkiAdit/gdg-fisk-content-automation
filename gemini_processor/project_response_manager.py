@@ -13,8 +13,10 @@ class ProjectResponseManager():
     """
     
     project: Project = None
+    project_template = BASE_PROJECT_TEMPLATE
+    project_template_values = BASE_PROJECT_TEMPLATE_VALUES
 
-    def __init__(self):
+    def __init__(self, input_readme):
         """
         Initializes the ProjectResponseManager with project information by interacting with the Gemini AI.
 
@@ -24,9 +26,10 @@ class ProjectResponseManager():
             ValueError: If the project information cannot be processed or extracted successfully.
         """
         self.ai_manager = GeminiProcessor()
+        self.project_template_values["input_readme"] = input_readme
         self.project = self._extract_project_from_text()
 
-    def _extract_project_from_text(self, project_template=BASE_PROJECT_TEMPLATE, project_template_values=BASE_PROJECT_TEMPLATE_VALUES):
+    def _extract_project_from_text(self):
         """
         Extracts project information from the provided project template and template values by interacting with the Gemini AI model.
 
@@ -41,7 +44,7 @@ class ProjectResponseManager():
             ValueError: If the project information cannot be converted from text to a valid JSON object.
         """
         # Render project prompt based on the provided template and template values
-        project_prompt = project_template.render(project_template_values)        
+        project_prompt = self.project_template.render(self.project_template_values)        
         # Get AI-generated content from the project prompt
         response = self.ai_manager.generate_content_from_text(project_prompt)    
         # Clean up the response to remove the JSON wrapper
@@ -53,7 +56,8 @@ class ProjectResponseManager():
             raise ValueError("Failed to decode the project response into a valid JSON object.")
         return data
 
-# if __name__ == "__main__":
-#     # Example usage
-#     project_response_ai = ProjectResponseManager()
-#     print(project_response_ai.project)
+if __name__ == "__main__":
+    # Example usage
+    input_readme = BASE_PROJECT_TEMPLATE_VALUES["input_readme"]
+    project_response_ai = ProjectResponseManager(input_readme)
+    print(project_response_ai.project)
